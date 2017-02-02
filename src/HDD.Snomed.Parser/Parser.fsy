@@ -1,0 +1,87 @@
+﻿%{
+open System
+open System.Collections.Generic
+open Microsoft.FSharp.Collections
+open HDD.Snomed
+%}
+
+%start start
+
+
+%token WS
+%token PIPE
+%token PLUS
+%token COLON
+%token COMMA
+%token EQUALS
+%token GROUP_OPEN
+%token GROUP_CLOSE
+%token NESTED_OPEN
+%token NESTED_CLOSE
+%token EQUIVALENTSTATUS
+%token SUBTYPEOF
+
+%token ConceptReference
+%token <UInt64> ConceptId
+%token <string> Term
+%token <int> IntegerValue
+%token <decimal> DecimalValue
+%token <string> StringValue
+%token EOF
+%type <Expression> start
+
+%%
+start:
+  | expression EOF                                   { $1 }
+
+conceptId:
+  | ConceptId { $1 }
+
+conceptReference:
+  | conceptId                                        { FocusConcept($1) }
+  | conceptId Term                                   { FocusConcept($1, $2) }
+
+focusConcepts:
+  | conceptReference                                 { [$1] }
+  | conceptReference PLUS focusConcepts              { $1::$3 }
+
+subExpression:
+  | focusConcepts                                    { SubExpression($1) }
+  | focusConcepts COLON refinement                   { SubExpression($1, $3) }
+
+expression:
+  | subExpression                                    { Expression($1) }
+  | EQUIVALENTSTATUS subExpression                   { Expression($2, DefinitionStatus.EquivalentTo) }
+  | SUBTYPEOF subExpression                          { Expression($2, DefinitionStatus.SubTypeOf) }
+
+refinement:
+  | attributeSetRefinement                           { $1 }
+  | attributeGroupRefinement                         { $1 }
+
+attributeSetRefinement:
+  | attributeSet                                     { AttributeSetRefinement($1):>IRefinement }
+  | attributeSet attributeGroupRefinementList        { AttributeSetRefinement($1, ($2: List<AttributeGroup>)):>IRefinement }
+  | attributeSet COMMA attributeGroupRefinementList  { AttributeSetRefinement($1, ($3: List<AttributeGroup>)):>IRefinement }
+
+attributeSet:
+  | attribute                                        { AttributeSet($1 : List<IAttribute>) }
+
+attributeGroupRefinement:
+  | attributeGroupRefinementList                     { AttributeGroupRefinement($1 : List<AttributeGroup>):>IRefinement }
+
+attributeGroupRefinementList:
+  | GROUP_OPEN attributeSet GROUP_CLOSE                                        { [AttributeGroup($2)] }
+  | GROUP_OPEN attributeSet GROUP_CLOSE COMMA attributeGroupRefinementList     { AttributeGroup($2)::$5 }
+
+attribute:
+  | conceptReference EQUALS conceptReference                                   { [Attribute($1, ExpressionValue($3))] }
+  | conceptReference EQUALS conceptReference COMMA                             { [Attribute($1, ExpressionValue($3))] }
+  | conceptReference EQUALS conceptReference COMMA attribute                   { Attribute($1, ExpressionValue($3)):>IAttribute::$5 }
+  | conceptReference EQUALS NESTED_OPEN subExpression NESTED_CLOSE             { [Attribute($1, NestedExpressionValue($4))] }
+  | conceptReference EQUALS concreteValue                                      { [Attribute($1, $3)] }
+  | conceptReference EQUALS concreteValue COMMA attribute                      { Attribute($1, $3):>IAttribute::$5 }
+
+concreteValue:
+  | IntegerValue                                     { HDD.Snomed.IntegerValue($1):>IAttributeValue }
+  | DecimalValue                                     { HDD.Snomed.DecimalValue($1):>IAttributeValue }
+  | StringValue                                      { HDD.Snomed.StringValue($1):>IAttributeValue }

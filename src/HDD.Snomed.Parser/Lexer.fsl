@@ -1,0 +1,79 @@
+﻿// © 2015 Peter Durrant
+// No permission is granted to copy, use, distribute or disclose this source code.
+
+// See F# Lexing and Parsing:
+//   https://en.wikibooks.org/wiki/F_Sharp_Programming/Lexing_and_Parsing
+//   http://fsprojects.github.io/FsLexYacc/
+//
+// See SNOMED Compositional Grammar:
+//   http://ihtsdo.org/fileadmin/user_upload/doc/download/doc_CompositionalGrammarSpecificationAndGuide_Current-en-US_INT_20150522.pdf?ok
+
+{
+(* 
+// © 2015 Peter Durrant
+// No permission is granted to copy, use, distribute or disclose this source code.
+*)
+
+module Lexer
+
+open System
+open Microsoft.FSharp.Text.Lexing
+}
+
+let whitespace    = [ ' ' '\t' '\r' '\n' ]
+let wsOptional    = whitespace*
+   
+let digitsign     = ['-' '+']
+let digit         = ['0'-'9']
+let digitNonZero  = ['1'-'9']
+let digitZero     = '0'
+let int64         = digit+
+let hash          = '#'
+let quote         = '"'
+   
+(*
+// Concept term must start and end with a non-whitespace character and not contain the delimiting pipe character
+*)
+let space               = ' '
+let nonwsNonPipe        = ['!'-'{' '}'-'~']
+let conceptTerm         = nonwsNonPipe+ (space nonwsNonPipe+)*
+
+let integerValue        = (hash digitsign? digitNonZero digit*)|(hash digitZero)
+let decimalValue        = integerValue '.' digit+
+let anyNonEscapedChar   = ['\t' '\r' '\n' ' '-'!' '#'-'[' ']'-'~']
+let stringValue         = quote anyNonEscapedChar+ quote
+let pipe                = wsOptional '|' wsOptional
+let plus                = '+'
+let equals              = '='
+let colon               = ':'
+let comma               = ','
+let openGroup           = '{'
+let closeGroup          = '}'
+let nestedOpen          = '('
+let nestedClose         = ')'
+
+(*
+// Definition status
+*)
+let equivalentStatus = wsOptional "===" wsOptional
+let subTypeOf        = wsOptional "<<<" wsOptional
+
+rule tokenstream = parse
+| wsOptional                { tokenstream lexbuf }
+| equivalentStatus          { Parser.EQUIVALENTSTATUS }
+| subTypeOf                 { Parser.SUBTYPEOF }
+| int64                     { Parser.ConceptId (System.UInt64.Parse(LexBuffer<_>.LexemeString lexbuf)) }
+| pipe conceptTerm pipe     { Parser.Term (LexBuffer<_>.LexemeString lexbuf) }
+| integerValue              { Parser.IntegerValue (HDD.Snomed.IntegerValue.Parse(LexBuffer<_>.LexemeString lexbuf)) }
+| decimalValue              { Parser.DecimalValue (HDD.Snomed.DecimalValue.Parse(LexBuffer<_>.LexemeString lexbuf)) }
+| stringValue               { Parser.StringValue (HDD.Snomed.StringValue.Parse(LexBuffer<_>.LexemeString lexbuf)) }
+| colon                     { Parser.COLON }
+| plus                      { Parser.PLUS }
+| comma                     { Parser.COMMA }
+| equals                    { Parser.EQUALS }
+| openGroup                 { Parser.GROUP_OPEN }
+| closeGroup                { Parser.GROUP_CLOSE }
+| nestedOpen                { Parser.NESTED_OPEN }
+| nestedClose               { Parser.NESTED_CLOSE }
+| eof                       { Parser.EOF }
+| _                         { raise (Exception (sprintf "SyntaxError: Unexpected char: '%s' Line: %d Column: %d" (LexBuffer<_>.LexemeString lexbuf) (lexbuf.StartPos.Line+1) lexbuf.StartPos.Column)) }
