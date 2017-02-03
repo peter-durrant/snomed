@@ -1,16 +1,11 @@
-# 11 "Lexer.fsl"
+# 8 "Lexer.fsl"
  
-(* 
-// © 2015 Peter Durrant
-// No permission is granted to copy, use, distribute or disclose this source code.
-*)
-
 module Lexer
 
 open System
 open Microsoft.FSharp.Text.Lexing
 
-# 13 "Lexer.fs"
+# 8 "Lexer.fs"
 let trans : uint16[] array = 
     [| 
     (* State 0 *)
@@ -117,94 +112,94 @@ and tokenstream  (lexbuf : Microsoft.FSharp.Text.Lexing.LexBuffer<_>) = _fslex_t
 and _fslex_tokenstream  _fslex_state lexbuf =
   match _fslex_tables.Interpret(_fslex_state,lexbuf) with
   | 0 -> ( 
-# 62 "Lexer.fsl"
+# 54 "Lexer.fsl"
                                              tokenstream lexbuf 
-# 122 "Lexer.fs"
+# 117 "Lexer.fs"
           )
   | 1 -> ( 
-# 63 "Lexer.fsl"
+# 55 "Lexer.fsl"
                                              Parser.EQUIVALENTSTATUS 
-# 127 "Lexer.fs"
+# 122 "Lexer.fs"
           )
   | 2 -> ( 
-# 64 "Lexer.fsl"
+# 56 "Lexer.fsl"
                                              Parser.SUBTYPEOF 
-# 132 "Lexer.fs"
+# 127 "Lexer.fs"
           )
   | 3 -> ( 
-# 65 "Lexer.fsl"
+# 57 "Lexer.fsl"
                                              Parser.ConceptId (System.UInt64.Parse(LexBuffer<_>.LexemeString lexbuf)) 
-# 137 "Lexer.fs"
+# 132 "Lexer.fs"
           )
   | 4 -> ( 
-# 66 "Lexer.fsl"
+# 58 "Lexer.fsl"
                                              Parser.Term (LexBuffer<_>.LexemeString lexbuf) 
-# 142 "Lexer.fs"
+# 137 "Lexer.fs"
           )
   | 5 -> ( 
-# 67 "Lexer.fsl"
+# 59 "Lexer.fsl"
                                              Parser.IntegerValue (HDD.Snomed.IntegerValue.Parse(LexBuffer<_>.LexemeString lexbuf)) 
-# 147 "Lexer.fs"
+# 142 "Lexer.fs"
           )
   | 6 -> ( 
-# 68 "Lexer.fsl"
+# 60 "Lexer.fsl"
                                              Parser.DecimalValue (HDD.Snomed.DecimalValue.Parse(LexBuffer<_>.LexemeString lexbuf)) 
-# 152 "Lexer.fs"
+# 147 "Lexer.fs"
           )
   | 7 -> ( 
-# 69 "Lexer.fsl"
+# 61 "Lexer.fsl"
                                              Parser.StringValue (HDD.Snomed.StringValue.Parse(LexBuffer<_>.LexemeString lexbuf)) 
-# 157 "Lexer.fs"
+# 152 "Lexer.fs"
           )
   | 8 -> ( 
-# 70 "Lexer.fsl"
+# 62 "Lexer.fsl"
                                              Parser.COLON 
-# 162 "Lexer.fs"
+# 157 "Lexer.fs"
           )
   | 9 -> ( 
-# 71 "Lexer.fsl"
+# 63 "Lexer.fsl"
                                              Parser.PLUS 
-# 167 "Lexer.fs"
+# 162 "Lexer.fs"
           )
   | 10 -> ( 
-# 72 "Lexer.fsl"
+# 64 "Lexer.fsl"
                                              Parser.COMMA 
-# 172 "Lexer.fs"
+# 167 "Lexer.fs"
           )
   | 11 -> ( 
-# 73 "Lexer.fsl"
+# 65 "Lexer.fsl"
                                              Parser.EQUALS 
-# 177 "Lexer.fs"
+# 172 "Lexer.fs"
           )
   | 12 -> ( 
-# 74 "Lexer.fsl"
+# 66 "Lexer.fsl"
                                              Parser.GROUP_OPEN 
-# 182 "Lexer.fs"
+# 177 "Lexer.fs"
           )
   | 13 -> ( 
-# 75 "Lexer.fsl"
+# 67 "Lexer.fsl"
                                              Parser.GROUP_CLOSE 
-# 187 "Lexer.fs"
+# 182 "Lexer.fs"
           )
   | 14 -> ( 
-# 76 "Lexer.fsl"
+# 68 "Lexer.fsl"
                                              Parser.NESTED_OPEN 
-# 192 "Lexer.fs"
+# 187 "Lexer.fs"
           )
   | 15 -> ( 
-# 77 "Lexer.fsl"
+# 69 "Lexer.fsl"
                                              Parser.NESTED_CLOSE 
-# 197 "Lexer.fs"
+# 192 "Lexer.fs"
           )
   | 16 -> ( 
-# 78 "Lexer.fsl"
+# 70 "Lexer.fsl"
                                              Parser.EOF 
-# 202 "Lexer.fs"
+# 197 "Lexer.fs"
           )
   | 17 -> ( 
-# 79 "Lexer.fsl"
+# 71 "Lexer.fsl"
                                              raise (Exception (sprintf "SyntaxError: Unexpected char: '%s' Line: %d Column: %d" (LexBuffer<_>.LexemeString lexbuf) (lexbuf.StartPos.Line+1) lexbuf.StartPos.Column)) 
-# 207 "Lexer.fs"
+# 202 "Lexer.fs"
           )
   | _ -> failwith "tokenstream"
 

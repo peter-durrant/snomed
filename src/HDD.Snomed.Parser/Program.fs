@@ -1,7 +1,4 @@
-﻿// © 2015 Peter Durrant
-// No permission is granted to copy, use, distribute or disclose this source code.
-
-module LexerProgram
+﻿module LexerProgram
 
 open Microsoft.FSharp.Text.Lexing
 

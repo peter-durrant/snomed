@@ -1,7 +1,4 @@
-﻿// © 2015 Peter Durrant
-// No permission is granted to copy, use, distribute or disclose this source code.
-
-// See F# Lexing and Parsing:
+﻿// See F# Lexing and Parsing:
 //   https://en.wikibooks.org/wiki/F_Sharp_Programming/Lexing_and_Parsing
 //   http://fsprojects.github.io/FsLexYacc/
 //
@@ -9,11 +6,6 @@
 //   http://ihtsdo.org/fileadmin/user_upload/doc/download/doc_CompositionalGrammarSpecificationAndGuide_Current-en-US_INT_20150522.pdf?ok
 
 {
-(* 
-// © 2015 Peter Durrant
-// No permission is granted to copy, use, distribute or disclose this source code.
-*)
-
 module Lexer
 
 open System
