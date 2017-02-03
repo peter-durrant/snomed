@@ -136,53 +136,63 @@ namespace HDD.Snomed.Console
          }
          foreach (var focusConcept in f.SubExpression.FocusConcepts)
          {
-            System.Console.ForegroundColor = ConsoleColor.White;
-            System.Console.Write("Focus concept: ");
-            System.Console.ForegroundColor = ConsoleColor.Cyan;
-            System.Console.Write($"{focusConcept.SctId}");
-            if (!string.IsNullOrEmpty(focusConcept.Term))
-            {
-               System.Console.ForegroundColor = ConsoleColor.White;
-               System.Console.Write(", term: ");
-               System.Console.ForegroundColor = ConsoleColor.Cyan;
-               System.Console.Write($"{focusConcept.Term}");
-            }
-            System.Console.WriteLine();
+            WriteFocusConcept(focusConcept);
          }
 
          if (f.SubExpression.Refinement != null)
          {
-            System.Console.ForegroundColor = ConsoleColor.White;
-            System.Console.Write("Refinement: ");
-            System.Console.ForegroundColor = ConsoleColor.Cyan;
-            System.Console.WriteLine($"{f.SubExpression.Refinement}");
-
-            var attributeGroupRefinement = f.SubExpression.Refinement as AttributeGroupRefinement;
-            var attributeSetRefinement = f.SubExpression.Refinement as AttributeSetRefinement;
-
-            if ((attributeGroupRefinement == null) && (attributeSetRefinement == null))
-            {
-               throw new InvalidOperationException("Unrecognised refinement");
-            }
-
-            if (attributeGroupRefinement != null)
-            {
-               foreach (var attributeGroup in attributeGroupRefinement.AttributeGroups)
-               {
-                  var attributeSet = attributeGroup.AttributeSet;
-                  ParseAttributeSet(attributeSet);
-               }
-            }
-            else if (attributeSetRefinement != null)
-            {
-               if (attributeSetRefinement.AttributeGroups != null)
-               {
-                  ParseAttributeGroups(attributeSetRefinement.AttributeGroups);
-               }
-               ParseAttributeSet(attributeSetRefinement.AttributeSet);
-            }
+            WriteRefinement(f.SubExpression.Refinement);
          }
          System.Console.ForegroundColor = ConsoleColor.White;
+         System.Console.WriteLine();
+      }
+
+      private static void WriteRefinement(IRefinement refinement)
+      {
+         System.Console.ForegroundColor = ConsoleColor.White;
+         System.Console.Write("Refinement: ");
+         System.Console.ForegroundColor = ConsoleColor.Cyan;
+         System.Console.WriteLine($"{refinement}");
+
+         var attributeGroupRefinement = refinement as AttributeGroupRefinement;
+         var attributeSetRefinement = refinement as AttributeSetRefinement;
+
+         if ((attributeGroupRefinement == null) && (attributeSetRefinement == null))
+         {
+            throw new InvalidOperationException("Unrecognised refinement");
+         }
+
+         if (attributeGroupRefinement != null)
+         {
+            foreach (var attributeGroup in attributeGroupRefinement.AttributeGroups)
+            {
+               var attributeSet = attributeGroup.AttributeSet;
+               ParseAttributeSet(attributeSet);
+            }
+         }
+         else if (attributeSetRefinement != null)
+         {
+            if (attributeSetRefinement.AttributeGroups != null)
+            {
+               ParseAttributeGroups(attributeSetRefinement.AttributeGroups);
+            }
+            ParseAttributeSet(attributeSetRefinement.AttributeSet);
+         }
+      }
+
+      private static void WriteFocusConcept(FocusConcept focusConcept)
+      {
+         System.Console.ForegroundColor = ConsoleColor.White;
+         System.Console.Write("Focus concept: ");
+         System.Console.ForegroundColor = ConsoleColor.Cyan;
+         System.Console.Write($"{focusConcept.SctId}");
+         if (!string.IsNullOrEmpty(focusConcept.Term))
+         {
+            System.Console.ForegroundColor = ConsoleColor.White;
+            System.Console.Write(", term: ");
+            System.Console.ForegroundColor = ConsoleColor.Cyan;
+            System.Console.Write($"{focusConcept.Term}");
+         }
          System.Console.WriteLine();
       }
 
@@ -194,6 +204,21 @@ namespace HDD.Snomed.Console
             System.Console.Write($"{attribute.Name}");
             System.Console.ForegroundColor = ConsoleColor.Magenta;
             System.Console.WriteLine($" {attribute.Value}");
+
+            var expressionValue = attribute.Value as ExpressionValue; // TODO consider NestedExpressionValue
+            if (expressionValue == null)
+            {
+               return;
+            }
+
+            foreach (var focusConcept in expressionValue.FocusConcepts)
+            {
+               WriteFocusConcept(focusConcept);
+            }
+            if (expressionValue.Refinement != null)
+            {
+               WriteRefinement(expressionValue.Refinement);
+            }
          }
       }
 
